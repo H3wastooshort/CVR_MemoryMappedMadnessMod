@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34003.232
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "handOSC", "handOSC.csproj", "{5F5E0229-C132-45A4-A154-301D0D96B77B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5F5E0229-C132-45A4-A154-301D0D96B77B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F5E0229-C132-45A4-A154-301D0D96B77B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F5E0229-C132-45A4-A154-301D0D96B77B}.Release|Any CPU.ActiveCfg = Debug|x64
+		{5F5E0229-C132-45A4-A154-301D0D96B77B}.Release|Any CPU.Build.0 = Debug|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {595B3B7A-AC11-4494-8DAC-22D8A784F378}
+	EndGlobalSection
+EndGlobal
