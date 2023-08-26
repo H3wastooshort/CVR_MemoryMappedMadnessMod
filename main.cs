@@ -58,21 +58,24 @@ namespace handsOSC
 
         Quaternion dat_to_rot(hand_data hand)
         {
-            return new Quaternion(hand.handRotationX, hand.handRotationY, hand.handRotationZ, hand.handRotationW);
+            return new Quaternion
+            {
+                eulerAngles = new Vector3(hand.handRotationX, hand.handRotationY, hand.handRotationZ)
+            };
         }
 
         public override void OnUpdate()
         {
-            /*if (l_mapReader.Read(ref l_buffer))
+            if (l_mapReader.Read(ref l_buffer))
             {
-                hand_data l_hand = hand_data.ToObject(l_buffer);
+                hand_data l_hand = hand_data_func.ToObject(l_buffer);
                 hm.set_left_hand(dat_to_pos(l_hand), dat_to_rot(l_hand));
             }
             if (r_mapReader.Read(ref r_buffer))
             {
-                hand_data r_hand = hand_data.ToObject(r_buffer);
-                hm.set_left_hand(dat_to_pos(r_hand), dat_to_rot(r_hand));
-            }*/
+                hand_data r_hand = hand_data_func.ToObject(r_buffer);
+                hm.set_right_hand(dat_to_pos(r_hand), dat_to_rot(r_hand));
+            }
         }
 
         public override void OnDeinitializeMelon()
@@ -85,7 +88,7 @@ namespace handsOSC
             r_buffer = null;
         }
 
-        static Vector3 l_hand_pos = new Vector3(0, 0, 0);
+        /*static Vector3 l_hand_pos = new Vector3(0, 0, 0);
         static Vector3 r_hand_pos = new Vector3(0, 0, 0);
         void setHands()
         {
@@ -93,9 +96,10 @@ namespace handsOSC
             hm.set_right_hand(r_hand_pos, Quaternion.identity);
         }
 
-        float move_amount = 0.05f;
+        float move_amount = 0.05f;*/
         public override void OnLateUpdate()
         {
+            /*
             if (Input.GetKeyDown(KeyCode.PageUp)) { move_amount = 0.5f; }
             if (Input.GetKeyDown(KeyCode.PageDown)) { move_amount = 0.05f; }
             
@@ -111,8 +115,12 @@ namespace handsOSC
             if (Input.GetKeyDown(KeyCode.F10)) {r_hand_pos.y -= move_amount; setHands(); }
             if (Input.GetKeyDown(KeyCode.F11)) {r_hand_pos.z += move_amount; setHands(); }
             if (Input.GetKeyDown(KeyCode.F12)) {r_hand_pos.z -= move_amount; setHands(); }
+            */
 
-            
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                hm.dump_data(LoggerInstance);
+            }
         }
     }
 }

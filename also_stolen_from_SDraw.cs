@@ -19,33 +19,34 @@ struct hand_data
     public float handRotationY;
     public float handRotationZ;
     public float handRotationW;
-    
-    static public byte[] ToBytes(hand_data p_handData)
-    {
-        int l_size = Marshal.SizeOf(p_handData);
-        byte[] l_arr = new byte[l_size];
+}
+class hand_data_func { 
+static public byte[] ToBytes(hand_data p_handData)
+{
+    int l_size = Marshal.SizeOf(p_handData);
+    byte[] l_arr = new byte[l_size];
 
-        IntPtr ptr = Marshal.AllocHGlobal(l_size);
-        Marshal.StructureToPtr(p_handData, ptr, true);
-        Marshal.Copy(ptr, l_arr, 0, l_size);
-        Marshal.FreeHGlobal(ptr);
-        return l_arr;
-    }
+    IntPtr ptr = Marshal.AllocHGlobal(l_size);
+    Marshal.StructureToPtr(p_handData, ptr, true);
+    Marshal.Copy(ptr, l_arr, 0, l_size);
+    Marshal.FreeHGlobal(ptr);
+    return l_arr;
+}
 
-    static public hand_data ToObject(byte[] p_buffer)
-    {
-        hand_data l_handData = new hand_data();
+static public hand_data ToObject(byte[] p_buffer)
+{
+    hand_data l_handData = new hand_data();
 
-        int l_size = Marshal.SizeOf(l_handData);
-        IntPtr l_ptr = Marshal.AllocHGlobal(l_size);
+    int l_size = Marshal.SizeOf(l_handData);
+    IntPtr l_ptr = Marshal.AllocHGlobal(l_size);
 
-        Marshal.Copy(p_buffer, 0, l_ptr, l_size);
+    Marshal.Copy(p_buffer, 0, l_ptr, l_size);
 
-        l_handData = (hand_data)Marshal.PtrToStructure(l_ptr, l_handData.GetType());
-        Marshal.FreeHGlobal(l_ptr);
+    l_handData = (hand_data)Marshal.PtrToStructure(l_ptr, l_handData.GetType());
+    Marshal.FreeHGlobal(l_ptr);
 
-        return l_handData;
-    }
+    return l_handData;
+}
 }
 
 namespace handOSC
