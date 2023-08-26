@@ -119,6 +119,16 @@ namespace handsOSC
 
             if (Input.GetKeyDown(KeyCode.F1))
             {
+                hm.l_enabled = !hm.l_enabled;
+                LoggerInstance.Msg(hm.l_enabled ? "Left Enabled" : "Left Disabled"); 
+            }
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                hm.r_enabled = !hm.r_enabled;
+                LoggerInstance.Msg(hm.r_enabled ? "Right Enabled" : "Right Disabled");
+            }
+            if (Input.GetKeyDown(KeyCode.F3))
+            {
                 hm.dump_data(LoggerInstance);
             }
         }

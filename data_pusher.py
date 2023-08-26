@@ -28,9 +28,9 @@ def set_hand_pos(f, arg):
 
 def set_hand_rot(f, arg):
     conv=(2*math.pi)/360
-    ex=arg[2]#+180)*conv
-    ey=arg[1]#+180)*conv
-    ez=arg[0]#+180)*conv
+    ex=-arg[2]+60#+180)*conv
+    ey=arg[1]+90#+180)*conv
+    ez=-arg[0]-90#+180)*conv
     f.seek(4*3)
     f.write(struct.pack('fff',ex,ey,ez))
 

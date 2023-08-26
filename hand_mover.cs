@@ -16,6 +16,9 @@ namespace handOSC
     [DisallowMultipleComponent]
     class hand_mover : MonoBehaviour
     {
+        public bool l_enabled = false;
+        public bool r_enabled = false;
+
         VRIK m_vrIK = null;
 
         Vector3 l_hand_target_pos;
@@ -36,30 +39,38 @@ namespace handOSC
 
         //what i actually did
         internal void OnIKPreUpdate()
-        {
-            Vector3 pos = PlayerSetup.Instance.GetPlayerPosition();
-            Quaternion rot = PlayerSetup.Instance.GetPlayerRotation();
+        { if (l_enabled || r_enabled)
+            {
+                Vector3 pos = PlayerSetup.Instance.GetPlayerPosition();
+                Quaternion rot = PlayerSetup.Instance.GetPlayerRotation();
 
-            m_vrIK.solver.leftArm.IKPosition = (rot * l_hand_target_pos) + pos;
-            m_vrIK.solver.leftArm.IKRotation = l_hand_target_rot*rot;
-            m_vrIK.solver.rightArm.IKPosition = (rot * r_hand_target_pos) + pos;
-            m_vrIK.solver.rightArm.IKRotation = r_hand_target_rot*rot;
+                if (l_enabled)
+                {
+                    m_vrIK.solver.leftArm.IKPosition = (rot * l_hand_target_pos) + pos;
+                    m_vrIK.solver.leftArm.IKRotation = l_hand_target_rot;
+                    m_vrIK.solver.leftArm.bendGoalWeight = 0f;
+                    m_vrIK.solver.leftArm.positionWeight = 1f;
+                    m_vrIK.solver.leftArm.rotationWeight = 1f;
+                }
+                if (r_enabled)
+                {
+                    m_vrIK.solver.rightArm.IKPosition = (rot * r_hand_target_pos) + pos;
+                    m_vrIK.solver.rightArm.IKRotation = r_hand_target_rot;
+                    m_vrIK.solver.rightArm.bendGoalWeight = 0f;
+                    m_vrIK.solver.rightArm.positionWeight = 1f;
+                    m_vrIK.solver.rightArm.rotationWeight = 1f;
+                }
 
-            /*m_vrIK.solver.leftArm.target.position = (rot * l_hand_target_pos) + pos;
-            m_vrIK.solver.leftArm.target.localRotation = l_hand_target_rot;
-            m_vrIK.solver.rightArm.target.position = (rot * r_hand_target_pos) + pos;
-            m_vrIK.solver.rightArm.target.localRotation = r_hand_target_rot;*/
+                /*m_vrIK.solver.leftArm.target.position = (rot * l_hand_target_pos) + pos;
+                m_vrIK.solver.leftArm.target.localRotation = l_hand_target_rot;
+                m_vrIK.solver.rightArm.target.position = (rot * r_hand_target_pos) + pos;
+                m_vrIK.solver.rightArm.target.localRotation = r_hand_target_rot;*/
 
-            m_vrIK.solver.leftArm.bendGoalWeight = 0f;
-            m_vrIK.solver.rightArm.bendGoalWeight = 0f;
 
-            /*m_vrIK.solver.leftArm.shoulderRotationMode= IKSolverVR.Arm.ShoulderRotationMode.FromTo;
-            m_vrIK.solver.rightArm.shoulderRotationMode = IKSolverVR.Arm.ShoulderRotationMode.FromTo;*/
+                /*m_vrIK.solver.leftArm.shoulderRotationMode= IKSolverVR.Arm.ShoulderRotationMode.FromTo;
+                m_vrIK.solver.rightArm.shoulderRotationMode = IKSolverVR.Arm.ShoulderRotationMode.FromTo;*/
 
-            m_vrIK.solver.leftArm.positionWeight = 1f;
-            m_vrIK.solver.leftArm.rotationWeight = 1f;
-            m_vrIK.solver.rightArm.positionWeight = 1f;
-            m_vrIK.solver.rightArm.rotationWeight = 1f;
+            }
         }
 
         /*internal void set_hand(ref Transform target, Vector3 position, Vector3 rotation)
