@@ -5,7 +5,7 @@ void setup() {
   Serial.begin(115200);
 }
 
-#define ANALOG_AVG 20
+#define ANALOG_AVG 64
 uint16_t analogReadAVG(uint8_t pin) {
   uint32_t val = 0;
   for (uint8_t i = 0; i < ANALOG_AVG; i++) val += analogRead(pin);
@@ -15,9 +15,11 @@ uint16_t analogReadAVG(uint8_t pin) {
 
 void loop() {
   for (uint8_t p = A0; p <= STOP_PIN; p++) {
-    Serial.write(uint8_t(analogReadAVG(p)/4));
+    uint16_t n;
+    n = analogReadAVG(p);
+    Serial.write((char*)(void*)&n,2);
   }
   Serial.write(42);
-  Serial.print("END\n");
-  delay(10);
+  Serial.print("EndOfPkg\n");
+  //delay(10);
 }
