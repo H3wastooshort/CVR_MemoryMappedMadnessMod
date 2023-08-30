@@ -18,7 +18,7 @@ mag = 0.3
 def set_hand_pos(f, arg):
     adc = 512 #max adc value / 2 
     x=mag*((arg[0]-adc) / adc)
-    y=mag*((arg[1]-adc) / adc)+1
+    y=mag*2*((arg[1]-adc) / adc)+1
     z=-mag*((arg[2]-adc) / adc)+0.1
     f.seek(0)
     f.write(struct.pack('fff',x,y,z))
@@ -62,7 +62,9 @@ def try_data():
     if (dat[6] != 42):
         return "Incorrect magic: %d" % dat[6]
     right_pos_handler(dat[0],dat[1],dat[2])
+    left_pos_handler(dat[0],dat[1],dat[2])
     right_rot_handler(dat[3],dat[4],dat[5])
+    left_rot_handler(dat[3],dat[4],dat[5])
     #left_pos_handler(dat[3],dat[4],dat[5])
     return "OK"
 
@@ -72,6 +74,6 @@ scr = curses.initscr()
 #scr.addstr(5,0,"waiting for data")
 while True:
     s = try_data()
-    print(s)
+    #print(s)
     scr.addstr(4,0,"                ")
     scr.addstr(4,0,s)
