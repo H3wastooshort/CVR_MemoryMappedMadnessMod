@@ -112,7 +112,7 @@ def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
         else:
             move_mag[0]=0
             move_mag[1]=0
-    elif (btns==left):
+    if (btns==left):
         move_mag[0] += x/500
         move_mag[1] += -y/500
         for m in move_mag:
