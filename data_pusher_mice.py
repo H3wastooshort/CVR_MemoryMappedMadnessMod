@@ -53,6 +53,8 @@ def right_rot_handler(arg):
     scr.refresh()
 
 mouse_map=[2,0,1]
+mouse_maps=[[2,0,1],[2,1,0],[0,2,1]]
+next_mouse_map=1
 
 l_pos = [0,0,0]
 l_rot = [0,0,0]
@@ -69,15 +71,53 @@ def fix_int_sign(integer,bits):
         integer -= ((2**(bits))/2)
     return integer
 
-def handle_mouse_data_default(btns,rotval,x,y,wheel,p,r):
-    if (btns == 4):
-        r[0]=0
-        r[1]=0
-        r[2]=0
-        p[0]=0
-        p[1]=0
-        p[2]=0
-    elif (btns == rotval):
+def not_moving(*argv):
+    for a in argv:
+        if a != 0:
+            return False
+    return True
+
+gesture=[1,1]
+move_mag=[0,0]
+def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
+    global move_mag, gesture, mouse_map, mouse_maps, next_mouse_map
+    if (not_moving(x,y)):
+        if (btns == 4):
+            r[0]=0
+            r[1]=0
+            r[2]=0
+            p[0]=0
+            p[1]=0
+            p[2]=0
+            move_mag[0]=0
+            move_mag[1]=0
+            for i in range(0,1):
+                gesture[i]=0
+        elif (btns==3):
+            for i in range(0,3):
+                mouse_map[i]=mouse_maps[next_mouse_map][i]
+            next_mouse_map+=1
+            next_mouse_map %= 3
+        elif (btns==left):
+            if (wheel != 0):
+                if (wheel>0):
+                    gesture[e]+=1
+                else:
+                    gesture[e]-=1
+                wheel=0
+                gesture[0]=max(min(gesture[0],7),-1)
+                gesture[1]=max(min(gesture[1],7),-1)
+                mm_ctrl.seek(0)
+                mm_ctrl.write(struct.pack('ff',gesture[0],gesture[1]))
+        else:
+            move_mag[0]=0
+            move_mag[1]=0
+    elif (btns==left):
+        move_mag[0] += x/500
+        move_mag[1] += -y/500
+        for m in move_mag:
+            m=max(min(m,1),-1)
+    elif (btns == right):
         #print("ROTATE ",end="")
         r[mouse_map[2]] += wheel * 10
         r[mouse_map[1]] += -x
@@ -90,6 +130,8 @@ def handle_mouse_data_default(btns,rotval,x,y,wheel,p,r):
         p[mouse_map[1]] += y / 2000
         p[mouse_map[2]] += wheel / 50
         #print(p)
+    mm_ctrl.seek(4*2)
+    mm_ctrl.write(struct.pack('ff',move_mag[0],move_mag[1]))
 
 def parse_mouse(b):
     if (len(b) != 6):
@@ -115,40 +157,18 @@ def parse_mouse(b):
     return (btns,x,y,wheel)
     
 
-current_emote=1
 def parse_left_mouse(b):
-    global current_emote
     #d = struct.unpack('<BBL',b)
     #print('{:032b}'.format(d[2]))
     (btns,x,y,wheel) = parse_mouse(b)
-    if (btns==2):
-        if (wheel != 0):
-            if (wheel>0):
-                current_emote+=1
-            else:
-                current_emote-=1
-            wheel=0
-            current_emote=max(min(current_emote,7),0)
-            mm_ctrl.seek(0)
-            mm_ctrl.write(struct.pack('ff',current_emote,current_emote))
-    handle_mouse_data_default(btns,1,x,y,wheel,l_pos,l_rot)
+    
+    handle_mouse_data_default(btns,1,2,x,y,wheel,l_pos,l_rot,0)
     left_pos_handler(l_pos)
     left_rot_handler(l_rot)
 
-move_mag=[0,0]
 def parse_right_mouse(b):
-    global move_mag
     (btns,x,y,wheel) = parse_mouse(b)
-    if (btns == 1):
-        move_mag[0] += x
-        move_mag[1] += y
-        for m in move_mag:
-            m=max(min(m,1),-1)
-        mm_ctrl.seek(4*2)
-        mm_ctrl.write(struct.pack('ff',move_mag[0],move_mag[1]))
-    else:
-        move_mag=[0,0]
-        handle_mouse_data_default(btns,2,x,y,wheel,r_pos,r_rot)
+    handle_mouse_data_default(btns,2,1,x,y,wheel,r_pos,r_rot,1)
     right_pos_handler(r_pos)
     right_rot_handler(r_rot)
 

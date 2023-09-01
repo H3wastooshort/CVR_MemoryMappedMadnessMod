@@ -21,7 +21,6 @@ namespace handsOSC
         byte[] ctrl_buffer = null;
 
         static input_stuff in_stuff = new input_stuff();
-        bool use_ctrl = false;
 
         public override void OnInitializeMelon()
         {
@@ -87,7 +86,7 @@ namespace handsOSC
                 hand_data r_hand = hand_data_func.ToObject(r_buffer);
                 hm.set_right_hand(dat_to_pos(r_hand), dat_to_rot(r_hand));
             }
-            if (use_ctrl)
+            if (in_stuff.use_ctrl)
                 if(ctrl_mapReader.Read(ref ctrl_buffer))
                 {
                     ctrl_data ctrl = ctrl_data_func.ToObject(ctrl_buffer);
@@ -146,8 +145,8 @@ namespace handsOSC
             }
             if (Input.GetKeyDown(KeyCode.F3))
             {
-                use_ctrl = !use_ctrl;
-                LoggerInstance.Msg(use_ctrl ? "Control Enabled" : "Control Disabled");
+                in_stuff.use_ctrl = !in_stuff.use_ctrl;
+                LoggerInstance.Msg(in_stuff.use_ctrl ? "Control Enabled" : "Control Disabled");
             }
             if (Input.GetKeyDown(KeyCode.F4))
             {
@@ -161,7 +160,7 @@ namespace handsOSC
         {
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(CVRInputManager), nameof(CVRInputManager.Start))]
+            [HarmonyPatch(typeof(CVRInputManager), "Start"/*nameof(CVRInputManager.Start)*/)]
             public static void After_CVRInputManager_Start(CVRInputManager __instance)
             {
                 __instance.AddInputModule(in_stuff);
