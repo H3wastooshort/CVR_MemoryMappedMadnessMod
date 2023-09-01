@@ -1,16 +1,9 @@
 ﻿//Lots of stuff here is stolen from SDraw. thanks
 
 using ABI_RC.Core.Player;
-using ABI_RC.Core.Savior;
-using ABI_RC.Core.UI;
-using ABI_RC.Systems.IK;
-using ABI_RC.Systems.InputManagement;
 using RootMotion.FinalIK;
-using System.Reflection;
 using UnityEngine;
 using MelonLoader;
-using System.Linq.Expressions;
-
 namespace handOSC
 {
     [DisallowMultipleComponent]
@@ -24,7 +17,7 @@ namespace handOSC
         Vector3 l_hand_target_pos;
         Quaternion l_hand_target_rot;
         Vector3 r_hand_target_pos;
-        Quaternion r_hand_target_rot;      
+        Quaternion r_hand_target_rot;
 
         internal void OnAvatarClear()
         {

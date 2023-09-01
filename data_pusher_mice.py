@@ -2,8 +2,9 @@ import mmap, struct, math, curses, sys
 import usb.core,usb.util #PyUSB
 from binascii import hexlify
 
-mm_l = mmap.mmap(-1,1024,tagname="hand/left")
-mm_r = mmap.mmap(-1,1024,tagname="hand/right")
+mm_l = mmap.mmap(-1,64,tagname="hand/left")
+mm_r = mmap.mmap(-1,64,tagname="hand/right")
+mm_ctrl = mmap.mmap(-1,64,tagname="ctrl")
 
 #struct hand_data
 #  public float handPositionX;
@@ -25,9 +26,9 @@ def set_hand_pos(f, arg):
 
 def set_hand_rot(f, arg):
     #conv=(2*math.pi)/255
-    conv=360/1023
+    conv=360/2000
     ex=-arg[2]*conv
-    ey=-arg[1]*conv
+    ey=-arg[1]*conv*2
     ez=-arg[0]*conv
     f.seek(4*3)
     f.write(struct.pack('fff',ex,ey,ez))
@@ -68,7 +69,29 @@ def fix_int_sign(integer,bits):
         integer -= ((2**(bits))/2)
     return integer
 
-def parse_mouse(b,p,r):
+def handle_mouse_data_default(btns,rotval,x,y,wheel,p,r):
+    if (btns == 4):
+        r[0]=0
+        r[1]=0
+        r[2]=0
+        p[0]=0
+        p[1]=0
+        p[2]=0
+    elif (btns == rotval):
+        #print("ROTATE ",end="")
+        r[mouse_map[2]] += wheel * 10
+        r[mouse_map[1]] += -x
+        r[mouse_map[0]] += y
+        #r[mouse_map[1]] += wheel * 10
+        #print(r)
+    else:
+        #print("TRANSLATE ",end="")
+        p[mouse_map[0]] += x / 2000
+        p[mouse_map[1]] += y / 2000
+        p[mouse_map[2]] += wheel / 50
+        #print(p)
+
+def parse_mouse(b):
     if (len(b) != 6):
         print("wrong len")
         return
@@ -89,36 +112,43 @@ def parse_mouse(b,p,r):
     y = fix_int_sign(y,12)
     wheel = fix_int_sign(wheel,8)
     
-    if (btns == 4):
-        r[0]=0
-        r[1]=0
-        r[2]=0
-        p[0]=0
-        p[1]=0
-        p[2]=0
-    if (btns == 2 or btns == 3):
-        #print("ROTATE ",end="")
-        r[mouse_map[2]] += -x
-        r[mouse_map[1]] += -x
-        r[mouse_map[0]] += y
-        #r[mouse_map[1]] += wheel * 10
-        #print(r)
-    else:
-        #print("TRANSLATE ",end="")
-        p[mouse_map[0]] += x / 2000
-        p[mouse_map[1]] += y / 2000
-        p[mouse_map[2]] += wheel / 50
-        #print(p)
+    return (btns,x,y,wheel)
+    
 
+current_emote=1
 def parse_left_mouse(b):
+    global current_emote
     #d = struct.unpack('<BBL',b)
     #print('{:032b}'.format(d[2]))
-    parse_mouse(b,l_pos,l_rot)
+    (btns,x,y,wheel) = parse_mouse(b)
+    if (btns==2):
+        if (wheel != 0):
+            if (wheel>0):
+                current_emote+=1
+            else:
+                current_emote-=1
+            wheel=0
+            current_emote=max(min(current_emote,7),0)
+            mm_ctrl.seek(0)
+            mm_ctrl.write(struct.pack('ff',current_emote,current_emote))
+    handle_mouse_data_default(btns,1,x,y,wheel,l_pos,l_rot)
     left_pos_handler(l_pos)
     left_rot_handler(l_rot)
 
+move_mag=[0,0]
 def parse_right_mouse(b):
-    parse_mouse(b,r_pos,r_rot)
+    global move_mag
+    (btns,x,y,wheel) = parse_mouse(b)
+    if (btns == 1):
+        move_mag[0] += x
+        move_mag[1] += y
+        for m in move_mag:
+            m=max(min(m,1),-1)
+        mm_ctrl.seek(4*2)
+        mm_ctrl.write(struct.pack('ff',move_mag[0],move_mag[1]))
+    else:
+        move_mag=[0,0]
+        handle_mouse_data_default(btns,2,x,y,wheel,r_pos,r_rot)
     right_pos_handler(r_pos)
     right_rot_handler(r_rot)
 
@@ -165,7 +195,7 @@ scr = curses.initscr()
 def left_loop():
     d=[]
     try:
-        d=l_ep.read(6, timeout=10)
+        d=l_ep.read(6, timeout=9)
     except usb.core.USBTimeoutError:
         pass
     except IOError:
@@ -176,7 +206,7 @@ def left_loop():
 def right_loop():
     d=[]
     try:
-        d=r_ep.read(6, timeout=10)
+        d=r_ep.read(6, timeout=9)
     except usb.core.USBTimeoutError:
         pass
     except IOError:

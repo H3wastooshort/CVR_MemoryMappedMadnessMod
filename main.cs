@@ -1,9 +1,11 @@
 ﻿using ABI_RC.Core.Player;
+using ABI_RC.Systems.InputManagement;
 using handOSC;
 using MelonLoader;
-using System;
 using System.Reflection;
 using UnityEngine;
+using HarmonyLib;
+
 
 namespace handsOSC
 {
@@ -13,34 +15,43 @@ namespace handsOSC
 
         MemoryMapReader l_mapReader = null;
         MemoryMapReader r_mapReader = null;
+        MemoryMapReader ctrl_mapReader = null;
         byte[] l_buffer = null;
         byte[] r_buffer = null;
+        byte[] ctrl_buffer = null;
+
+        static input_stuff in_stuff = new input_stuff();
+        bool use_ctrl = false;
 
         public override void OnInitializeMelon()
         {
-            LoggerInstance.Msg("HandsOSC by H3");
+            LoggerInstance.Msg("memory-mapped madness by H3");
 
             l_mapReader = new MemoryMapReader();
             l_buffer = new byte[1024];
             r_mapReader = new MemoryMapReader();
             r_buffer = new byte[1024];
+            ctrl_mapReader = new MemoryMapReader();
+            ctrl_buffer = new byte[1024];
 
             l_mapReader.Open("hand/left");
             r_mapReader.Open("hand/right");
+            ctrl_mapReader.Open("ctrl");
+
 
             HarmonyInstance.Patch(
                 typeof(PlayerSetup).GetMethod(nameof(PlayerSetup.ClearAvatar)),
                 null,
-                new HarmonyLib.HarmonyMethod(typeof(handsOSC_mod).GetMethod(nameof(handsOSC_mod.OnAvatarClear), BindingFlags.Static | BindingFlags.NonPublic))
+                new HarmonyMethod(typeof(handsOSC_mod).GetMethod(nameof(handsOSC_mod.OnAvatarClear), BindingFlags.Static | BindingFlags.NonPublic))
             );
             HarmonyInstance.Patch(
                 typeof(PlayerSetup).GetMethod(nameof(PlayerSetup.SetupAvatar)),
                 null,
-                new HarmonyLib.HarmonyMethod(typeof(handsOSC_mod).GetMethod(nameof(handsOSC_mod.OnAvatarSetup), BindingFlags.Static | BindingFlags.NonPublic))
+                new HarmonyMethod(typeof(handsOSC_mod).GetMethod(nameof(handsOSC_mod.OnAvatarSetup), BindingFlags.Static | BindingFlags.NonPublic))
             );
         }
 
-        static void OnAvatarSetup()
+             static void OnAvatarSetup()
         {
             hm.OnAvatarSetup();
         }
@@ -76,6 +87,12 @@ namespace handsOSC
                 hand_data r_hand = hand_data_func.ToObject(r_buffer);
                 hm.set_right_hand(dat_to_pos(r_hand), dat_to_rot(r_hand));
             }
+            if (use_ctrl)
+                if(ctrl_mapReader.Read(ref ctrl_buffer))
+                {
+                    ctrl_data ctrl = ctrl_data_func.ToObject(ctrl_buffer);
+                    in_stuff.update_ctrl(ctrl);
+                }
         }
 
         public override void OnDeinitializeMelon()
@@ -129,7 +146,25 @@ namespace handsOSC
             }
             if (Input.GetKeyDown(KeyCode.F3))
             {
+                use_ctrl = !use_ctrl;
+                LoggerInstance.Msg(use_ctrl ? "Control Enabled" : "Control Disabled");
+            }
+            if (Input.GetKeyDown(KeyCode.F4))
+            {
                 hm.dump_data(LoggerInstance);
+            }
+        }
+
+        //kinda stolen from kafeijao
+        [HarmonyPatch]
+        internal class HarmonyPatches
+        {
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(CVRInputManager), nameof(CVRInputManager.Start))]
+            public static void After_CVRInputManager_Start(CVRInputManager __instance)
+            {
+                __instance.AddInputModule(in_stuff);
             }
         }
     }
