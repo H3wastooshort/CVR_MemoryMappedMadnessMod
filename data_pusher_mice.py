@@ -53,7 +53,7 @@ def right_rot_handler(arg):
     scr.refresh()
 
 mouse_map=[2,0,1]
-mouse_maps=[[2,0,1],[2,1,0],[0,2,1]]
+mouse_maps=[[2,0,1],[2,1,0],[0,1,2]]
 next_mouse_map=1
 
 l_pos = [0,0,0]
@@ -119,9 +119,9 @@ def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
             m=max(min(m,1),-1)
     elif (btns == right):
         #print("ROTATE ",end="")
-        r[mouse_map[2]] += wheel * 10
-        r[mouse_map[1]] += -x
-        r[mouse_map[0]] += y
+        r[mouse_map[0]] += wheel * 10 #arm axis rottation
+        r[mouse_map[1]] += -y #up dn
+        r[mouse_map[2]] += -x # left right
         #r[mouse_map[1]] += wheel * 10
         #print(r)
     else:
