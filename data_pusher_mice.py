@@ -124,7 +124,7 @@ def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
         #print("ROTATE ",end="")
         r[mouse_map[0]] += wheel * 10 #arm axis rottation
         r[mouse_map[1]] += -y #up dn
-        r[mouse_map[2]] += x # left right
+        r[mouse_map[2]] += -x # left right
         #r[mouse_map[1]] += wheel * 10
         #print(r)
     else:
