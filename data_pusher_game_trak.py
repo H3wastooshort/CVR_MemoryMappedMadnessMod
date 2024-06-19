@@ -15,9 +15,8 @@ mm_r = mmap.mmap(-1,64,tagname="hand/right")
 #    public float handRotationZ;
 #
 
-hand_offset = (0,0,0.2)
-
-mag=1
+hand_offset = (0,1,0.3)
+mag=(1,3,1)
 
 max_adc_angle = 4000
 max_angle = 45
@@ -27,9 +26,9 @@ max_len = 3.2 #cable length when reading 0
 min_len = 0.1 # how many meters out from swivel point does length get detected
 
 def set_hand_pos(f, arg):
-    x=arg[0]*mag + hand_offset[0]
-    y=arg[1]*mag + hand_offset[1]
-    z=arg[2]*mag + hand_offset[2]
+    x=arg[0]*mag[0] + hand_offset[0]
+    y=arg[1]*mag[1] + hand_offset[1]
+    z=arg[2]*mag[2] + hand_offset[2]
     f.seek(0)
     f.write(struct.pack('fff',x,y,z))
 
@@ -53,12 +52,12 @@ def right_pos_handler(arg):
 
 def left_rot_handler(arg):
     set_hand_rot(mm_l,arg)
-    scr.addstr(2,0, "LR X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
-    scr.refresh()
+    #scr.addstr(2,0, "LR X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
+    #scr.refresh()
 def right_rot_handler(arg):
     set_hand_rot(mm_r,arg)
-    scr.addstr(3,0, "RR X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
-    scr.refresh()
+    #scr.addstr(3,0, "RR X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
+    #scr.refresh()
 
 def fix_int_sign(integer,bits):
     sign_mask = 1 << bits-1 #can be ANDed with the int to select only the sign
