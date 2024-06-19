@@ -18,8 +18,11 @@ mm_r = mmap.mmap(-1,64,tagname="hand/right")
 mag=1
 
 max_angle = 45
-max_len = 3.2
+max_len = 3.2 #cable length fully extended
+offset_len = 0.2 # how many meters out from swivel point does length start to go up
 max_adc = 4096
+
+max_len -= offset_len
 
 def set_hand_pos(f, arg):
     x=arg[2]*mag
@@ -40,12 +43,12 @@ def set_hand_rot(f, arg):
 
 def left_pos_handler(arg):
     set_hand_pos(mm_l,arg)
-    scr.addstr(0,0, "LP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
-    scr.refresh()
+    #scr.addstr(0,0, "LP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
+    #scr.refresh()
 def right_pos_handler(arg):
     set_hand_pos(mm_r,arg)
-    scr.addstr(1,0, "RP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
-    scr.refresh()
+    #scr.addstr(1,0, "RP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
+    #scr.refresh()
 
 def left_rot_handler(arg):
     set_hand_rot(mm_l,arg)
@@ -56,17 +59,6 @@ def right_rot_handler(arg):
     scr.addstr(3,0, "RR X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
     scr.refresh()
 
-mouse_map=[2,0,1]
-mouse_maps=[[2,0,1],[2,1,0],[0,1,2]]
-next_mouse_map=1
-
-l_pos = [0,0,0]
-l_rot = [0,0,0]
-r_pos = [0,0,0]
-r_rot = [0,0,0]
-
-rot_en = False
-
 def fix_int_sign(integer,bits):
     sign_mask = 1 << bits-1 #can be ANDed with the int to select only the sign
     sign = (integer & sign_mask) >> bits-1 # get sign bit (0 or 1)
@@ -74,60 +66,6 @@ def fix_int_sign(integer,bits):
     if (sign==1):
         integer -= ((2**(bits))/2)
     return integer
-
-gesture=[1,1]
-move_mag=[0,0]
-def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
-    global move_mag, gesture, mouse_map, mouse_maps, next_mouse_map
-    if (not_moving(x,y)):
-        if (btns == 4):
-            r[0]=0
-            r[1]=0
-            r[2]=0
-            p[0]=0
-            p[1]=0
-            p[2]=0
-            move_mag[0]=0
-            move_mag[1]=0
-            for i in range(0,1):
-                gesture[i]=0
-        elif (btns==3):
-            for i in range(0,3):
-                mouse_map[i]=mouse_maps[next_mouse_map][i]
-            next_mouse_map+=1
-            next_mouse_map %= 3
-        elif (btns==left):
-            if (wheel != 0):
-                if (wheel>0):
-                    gesture[e]+=1
-                else:
-                    gesture[e]-=1
-                wheel=0
-                gesture[0]=max(min(gesture[0],7),-1)
-                gesture[1]=max(min(gesture[1],7),-1)
-                mm_ctrl.seek(0)
-                mm_ctrl.write(struct.pack('ff',gesture[0],gesture[1]))
-        else:
-            move_mag[0]=0
-            move_mag[1]=0
-    if (btns==left):
-        move_mag[0] += x/500
-        move_mag[1] += -y/500
-        for m in move_mag:
-            m=max(min(m,1),-1)
-    elif (btns == right):
-        #print("ROTATE ",end="")
-        r[mouse_map[0]] += wheel * 10 #arm axis rottation
-        r[mouse_map[1]] += -y #up dn
-        r[mouse_map[2]] += -x # left right
-        #r[mouse_map[1]] += wheel * 10
-        #print(r)
-    else:
-        #print("TRANSLATE ",end="")
-        p[mouse_map[0]] += x / 2000
-        p[mouse_map[1]] += y / 2000
-        p[mouse_map[2]] += wheel / 50
-        #print(p)
 
 def deg2rad(deg):
     return (deg/360) * 2*math.pi
@@ -137,8 +75,16 @@ def calc_3d(hor,ver,dist): #trigonometry time
     hor_rad = (2*(hor / max_adc)-1) * max_angle_rad
     ver_rad = (2*(ver / max_adc)-1) * max_angle_rad
     dist_m = ((max_adc-dist) / max_adc) * max_len
+    dist_m += offset_len
     print("Hor=%.3frad Ver=%.3frad Len=%04.2fm"%(hor_rad,ver_rad,dist_m))
     
+    x = dist_m * math.sin(hor_rad)
+    z = dist_m * math.sin(ver_rad)
+    # len = sqrt(x**2 + y**2 + z **2) <=> len**2 = ... <=> y**2 = len**2 - (x**2 + z**2) <=>
+    y = math.sqrt(dist_m**2 - (x**2 + z**2))
+    
+    print("X%06.3f Y%06.3f Z%06.3f" % (x,y,z))
+    return (x,y,z)
 
 def parse_game_trak(b):
     (left_hor, left_ver, left_len, right_hor, right_ver, right_len, buttons) = struct.unpack("<HHHHHHBxxx",b)
@@ -148,10 +94,9 @@ def parse_game_trak(b):
     l_pos = calc_3d(left_hor, left_ver, left_len)
     r_pos = calc_3d(right_hor, right_ver, right_len)
     
-    #handle_mouse_data_default(btns,1,2,x,y,wheel,l_pos,l_rot,0)
-    #left_pos_handler(l_pos)
+    left_pos_handler(l_pos)
     #left_rot_handler(l_rot)
-    #right_pos_handler(r_pos)
+    right_pos_handler(r_pos)
     #right_rot_handler(r_rot)
 
 #scr = curses.initscr()
