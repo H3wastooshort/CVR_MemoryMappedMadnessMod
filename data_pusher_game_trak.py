@@ -17,6 +17,10 @@ mm_r = mmap.mmap(-1,64,tagname="hand/right")
 
 mag=1
 
+max_angle = 45
+max_len = 3.2
+max_adc = 4096
+
 def set_hand_pos(f, arg):
     x=arg[2]*mag
     y=arg[1]*mag*2+1
@@ -125,10 +129,24 @@ def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
         p[mouse_map[2]] += wheel / 50
         #print(p)
 
+def deg2rad(deg):
+    return (deg/360) * 2*math.pi
+
+def calc_3d(hor,ver,dist): #trigonometry time
+    max_angle_rad = deg2rad(max_angle)
+    hor_rad = (2*(hor / max_adc)-1) * max_angle_rad
+    ver_rad = (2*(ver / max_adc)-1) * max_angle_rad
+    dist_m = ((max_adc-dist) / max_adc) * max_len
+    print("Hor=%.3frad Ver=%.3frad Len=%04.2fm"%(hor_rad,ver_rad,dist_m))
+    
+
 def parse_game_trak(b):
     (left_hor, left_ver, left_len, right_hor, right_ver, right_len, buttons) = struct.unpack("<HHHHHHBxxx",b)
     
     print(left_hor, left_ver, left_len, right_hor, right_ver, right_len)
+    
+    l_pos = calc_3d(left_hor, left_ver, left_len)
+    r_pos = calc_3d(right_hor, right_ver, right_len)
     
     #handle_mouse_data_default(btns,1,2,x,y,wheel,l_pos,l_rot,0)
     #left_pos_handler(l_pos)
