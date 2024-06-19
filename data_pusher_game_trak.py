@@ -126,7 +126,9 @@ def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
         #print(p)
 
 def parse_game_trak(b):
-    pass
+    (left_hor, left_ver, left_len, right_hor, right_ver, right_len, buttons) = struct.unpack("HHHHHHBxxx",b)
+    
+    print(left_hor, left_ver, left_len, right_hor, right_ver, right_len)
     
     #handle_mouse_data_default(btns,1,2,x,y,wheel,l_pos,l_rot,0)
     #left_pos_handler(l_pos)
