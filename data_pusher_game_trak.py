@@ -82,7 +82,7 @@ def calc_3d(hor,ver,dist): #trigonometry time
     x = dist_m * math.sin(hor_rad)
     z = dist_m * math.sin(ver_rad)
     # len = sqrt(x**2 + y**2 + z **2) <=> len**2 = ... <=> y**2 = len**2 - (x**2 + z**2) <=>
-    y = math.sqrt(dist_m**2 - (x**2 + z**2))
+    y = dist_m#math.sqrt(dist_m**2 - (x**2 + z**2))
     
     print("X%06.3f Y%06.3f Z%06.3f" % (x,y,z))
     return (x,y,z)
