@@ -125,59 +125,24 @@ def handle_mouse_data_default(btns,right,left,x,y,wheel,p,r,e):
         p[mouse_map[2]] += wheel / 50
         #print(p)
 
-def parse_left_mouse(b):
-    #d = struct.unpack('<BBL',b)
-    #print('{:032b}'.format(d[2]))
-    (btns,x,y,wheel) = parse_mouse(b)
-    
-    hexlify(b)
+def parse_game_trak(b):
+    pass
     
     #handle_mouse_data_default(btns,1,2,x,y,wheel,l_pos,l_rot,0)
-    left_pos_handler(l_pos)
-    left_rot_handler(l_rot)
-    right_pos_handler(r_pos)
-    right_rot_handler(r_rot)
-
-usb_devices = list(usb.core.find(find_all=True, bDeviceClass=0))
-for i,m in enumerate(usb_devices):
-    mf = "?M?"
-    prd = "?P?"
-    try:
-        mf = m.manufacturer
-    except:
-        pass
-    try:
-        prd = m.product
-    except:
-        pass
-    print('[%d] %s %s @ BUS%d ADDR%d'%(i,mf,prd,m.bus,m.address))#m.product))
-if (len(usb_devices)==0):
-    print("what? no usb devices?")
-gt_dev = int(input("which of these is your Gane-Trak? "))
-
-def init_gt(m):
-    m.reset()
-    m.set_configuration()
-    cfg = m.get_active_configuration()
-    intf = cfg[(0,0)]
-    print(intf)
-    ep = usb.util.find_descriptor(intf, custom_match = lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_IN)
-    print(ep)
-    return ep
-
-gt_ep = init_gt(usb_devices[gt_dev])
-
-assert gt_ep is not None
-
-print("starting")
+    #left_pos_handler(l_pos)
+    #left_rot_handler(l_rot)
+    #right_pos_handler(r_pos)
+    #right_rot_handler(r_rot)
 
 #scr = curses.initscr()
 
-while True:
-    d=[]
-    try:
-        d=gt_ep.read(6, timeout=1000)
-    except IOError:
-        exit("IO Error. Have you installed the WinUSB driver using Zadig?")
-    else:
+with hid.Device(0x0982, 0x0982) as dev:
+    print(f'Device manufacturer: {dev.manufacturer}')
+    print(f'Product: {dev.product}')
+    print(f'Serial Number: {dev.serial}')
+    print("starting")
+
+    while True:
+        d=dev.read(16, 1000)
+        print(hexlify(d, ' '))
         parse_game_trak(d)
