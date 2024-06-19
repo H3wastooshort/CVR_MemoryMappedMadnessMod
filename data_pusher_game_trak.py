@@ -15,9 +15,11 @@ mm_r = mmap.mmap(-1,64,tagname="hand/right")
 #    public float handRotationZ;
 #
 
+hand_offset = (0,0,0.2)
+
 mag=1
 
-max_adc = 4096
+max_adc_angle = 4000
 max_angle = 45
 
 max_adc_len=4075 # adc reading with cables fully retracted
@@ -25,17 +27,17 @@ max_len = 3.2 #cable length when reading 0
 min_len = 0.1 # how many meters out from swivel point does length get detected
 
 def set_hand_pos(f, arg):
-    x=arg[2]*mag
-    y=arg[1]*mag
-    z=-arg[0]*mag
+    x=arg[0]*mag + hand_offset[0]
+    y=arg[1]*mag + hand_offset[1]
+    z=arg[2]*mag + hand_offset[2]
     f.seek(0)
     f.write(struct.pack('fff',x,y,z))
 
 def set_hand_rot(f, arg):
     conv=360/(2*math.pi)
-    ex=-arg[2]*conv
+    ex=-arg[0]*conv
     ey=-arg[1]*conv
-    ez=-arg[0]*conv
+    ez=-arg[2]*conv
     f.seek(4*3)
     f.write(struct.pack('fff',ex,ey,ez))
 
@@ -71,8 +73,8 @@ def deg2rad(deg):
 
 def calc_3d(hor,ver,dist): #trigonometry time
     max_angle_rad = deg2rad(max_angle)
-    hor_rad = (2*(hor / max_adc)-1) * max_angle_rad
-    ver_rad = (2*(ver / max_adc)-1) * max_angle_rad
+    hor_rad = (2*(hor / max_adc_angle)-1) * max_angle_rad
+    ver_rad = (2*(ver / max_adc_angle)-1) * max_angle_rad
     dist_m = ((max_adc_len-dist) / max_adc_len) * (max_len - min_len)
     dist_m += min_len
     print("Hor=%.3frad Ver=%.3frad Len=%04.2fm"%(hor_rad,ver_rad,dist_m))
