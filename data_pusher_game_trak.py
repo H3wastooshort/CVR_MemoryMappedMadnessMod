@@ -17,25 +17,24 @@ mm_r = mmap.mmap(-1,64,tagname="hand/right")
 
 mag=1
 
-max_angle = 45
-max_len = 3.2 #cable length fully extended
-offset_len = 0.2 # how many meters out from swivel point does length start to go up
 max_adc = 4096
+max_angle = 45
 
-max_len -= offset_len
+max_adc_len=4075 # adc reading with cables fully retracted
+max_len = 3.2 #cable length when reading 0
+min_len = 0.1 # how many meters out from swivel point does length get detected
 
 def set_hand_pos(f, arg):
     x=arg[2]*mag
-    y=arg[1]*mag*2+1
-    z=-arg[0]*mag+0.1
+    y=arg[1]*mag
+    z=-arg[0]*mag
     f.seek(0)
     f.write(struct.pack('fff',x,y,z))
 
 def set_hand_rot(f, arg):
-    #conv=(2*math.pi)/255
-    conv=360/2000
+    conv=360/(2*math.pi)
     ex=-arg[2]*conv
-    ey=-arg[1]*conv*2
+    ey=-arg[1]*conv
     ez=-arg[0]*conv
     f.seek(4*3)
     f.write(struct.pack('fff',ex,ey,ez))
@@ -74,8 +73,8 @@ def calc_3d(hor,ver,dist): #trigonometry time
     max_angle_rad = deg2rad(max_angle)
     hor_rad = (2*(hor / max_adc)-1) * max_angle_rad
     ver_rad = (2*(ver / max_adc)-1) * max_angle_rad
-    dist_m = ((max_adc-dist) / max_adc) * max_len
-    dist_m += offset_len
+    dist_m = ((max_adc_len-dist) / max_adc_len) * (max_len - min_len)
+    dist_m += min_len
     print("Hor=%.3frad Ver=%.3frad Len=%04.2fm"%(hor_rad,ver_rad,dist_m))
     
     x = dist_m * math.sin(hor_rad)
