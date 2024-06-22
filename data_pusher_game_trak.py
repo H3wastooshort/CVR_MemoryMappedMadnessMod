@@ -112,12 +112,13 @@ def parse_game_trak(b):
             btn_was_down = False
             ofst_pos_l = triple_sub(l_pos,last_pos_l)
             ofst_pos_r = triple_sub(r_pos,last_pos_r)
+            print(ofst_pos_l,ofst_pos_r)
         last_pos_l = l_pos
         last_pos_r = r_pos
         
         left_pos_handler(triple_sub(l_pos,ofst_pos_l))
         #left_rot_handler(l_rot)
-        right_pos_handler(triple_sub(r_pos,ofst_pos_l))
+        right_pos_handler(triple_sub(r_pos,ofst_pos_r))
         #right_rot_handler(r_rot)
 
 with hid.Device(0x0982, 0x0982) as dev:
