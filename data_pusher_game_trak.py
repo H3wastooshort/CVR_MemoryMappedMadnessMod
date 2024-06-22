@@ -16,10 +16,12 @@ mm_r = mmap.mmap(-1,64,tagname="hand/right")
 #
 
 hand_offset = (0,0.5,0.3)
-mag=(2,3,2)
+mag=(1,3,1)
 
 max_adc_angle = 4000
 max_angle = 45
+
+dist_between_balls = 0.135
 
 max_adc_len=4075 # adc reading with cables fully retracted
 max_len = 3.2 #cable length when reading 0
@@ -43,11 +45,11 @@ def set_hand_rot(f, arg):
 
 def left_pos_handler(arg):
     set_hand_pos(mm_l,arg)
-    scr.addstr(0,0, "LP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
+    scr.addstr(0,0, "LP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0] - (dist_between_balls/2),arg[1],arg[2]))
     scr.refresh()
 def right_pos_handler(arg):
     set_hand_pos(mm_r,arg)
-    scr.addstr(1,0, "RP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0],arg[1],arg[2]))
+    scr.addstr(1,0, "RP X%+09.3f Y%+09.3f Z%+09.3f"%(arg[0] + (dist_between_balls/2),arg[1],arg[2]))
     scr.refresh()
 
 def left_rot_handler(arg):
